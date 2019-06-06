@@ -1,0 +1,35 @@
+create function to_base(num int, base int = 10) returns varchar 
+as 
+$$
+    with recursive z as (
+        select $1 as a, null::int as b, 0 as i
+        union all
+        select a/$2, a % $2, i+1 from z where a > 0
+    )
+    select array_to_string(array(select substring('0123456789abcdef' from b + 1 for 1) from z where i > 0 order by i desc),'');
+$$ language sql immutable;
+
+mydb=# select to_base(255,8);
+ to_base 
+---------
+ 377
+(1 row)
+
+mydb=# select to_base(255,4);
+ to_base 
+---------
+ 3333
+(1 row)
+
+mydb=# select to_base(255,2);
+ to_base  
+----------
+ 11111111
+(1 row)
+
+mydb=# select to_base(255,16);
+ to_base 
+---------
+ ff
+(1 row)
+
